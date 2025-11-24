@@ -1,3 +1,10 @@
+import os
+import sqlite3
+import pandas as pd
+import janitor      # remove_empty()
+from collections import OrderedDict
+from lamp import utils
+
 
 # ------------------------------------------------------------------------
 # wl-28-07-2025, Mon: RT matching
@@ -66,12 +73,12 @@ def comp_match_rt(peak, ref, rt_tol=2):
         col_names = list(map(lambda x: x[0], cur.description))
 
     # convert peak list to dictionary for query
-    pk = df2dict(peak[["name", "rt"]])
+    pk = utils.df2dict(peak[["name", "rt"]])
 
     # annotation/match compounds
     res = [comp_sel_rt(tab_name, col_names, cur, x, pk[x], rt_tol)
            for x in pk]
-    res = flatten_list(res)
+    res = utils.flatten_list(res)
     res = pd.DataFrame(res)
 
     res = (
@@ -92,6 +99,7 @@ def comp_match_rt(peak, ref, rt_tol=2):
     con.close()
 
     return res
+
 
 # ------------------------------------------------------------------------
 # wl-10-09-2025, Wed: load rt library file matching
