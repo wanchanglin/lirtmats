@@ -143,7 +143,7 @@ def read_rt(fn="", ion_mode="pos", sheet_name=0, sep="\t"):
 
     # load default reference library
     if not fn:
-        path = 'lib/rt_lib.xlsx'
+        path = 'lib/rt_lib_202509.xlsx'
         # fn = os.path.join(
         #     os.path.dirname(os.path.abspath(lamp.__file__)), path
         # )

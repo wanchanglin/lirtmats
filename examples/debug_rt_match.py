@@ -1,14 +1,18 @@
 # wl-24-11-2025, Mon: debug RT matching
-
+# wl-25-11-2025, Tue: debug embedded rt library
 import sys
 import pandas as pd
 from lamp import anno
+from lamp import utils
+# from importlib import reload
 
 if False:      # import installed 'lirtmats'
     import lirtmats.lirtmats as rtm
 else:          # import local 'lirtmats'(for development)
     sys.path.append("../lirtmats")
     import lirtmats as rtm
+
+# reload(rtm)
 
 # =========================================================================
 data_set = False
@@ -33,13 +37,13 @@ if data_set:
     csv_out_m = "./res/d" + str(d) + "_lamp_m.tsv"
 else:
     # d = "Nikik_HILIC_Pos"
-    # cols = [1, 2, 3, 4]
-    d = "Bunce_Lipids_Pos"
-    cols = [1, 2, 5, 13]
-    ion_mode = "pos"
+    d = "iSTOPP_C18aq_Neg"
+    cols = [1, 2, 3, 4]
+    ion_mode = "neg"
     data_dir = "./res/"
     # data_dir = "./data_wl/"
-    d_data = data_dir + str(d) + ".tsv"
+    d_data = data_dir + str(d) + ".xlsx"
+    # d_data = data_dir + str(d) + ".tsv"
     xlsx_out = "./res/" + str(d) + "_rt.xlsx"
     csv_out_s = "./res/" + str(d) + "_rt_s.tsv"
     csv_out_m = "./res/" + str(d) + "_rt_m.tsv"
@@ -50,7 +54,8 @@ df
 # ========================================================================
 # RT matching
 rt_tol = 5
-db_in = "./ref/rt_lib_202509.tsv"
+# db_in = "./ref/rt_lib_202509.tsv"
+db_in = ""
 
 # get reference library for matching
 ref = rtm.read_rt(db_in, ion_mode=ion_mode)
@@ -62,9 +67,12 @@ res.iloc[:, 0:5]
 
 sr, mr = anno.comp_summ(df, res)
 
-# wl-16-10-2025, Thu: save to Excel
-mr.to_csv(csv_out_m, sep="\t", index=False)
-sr.to_csv(csv_out_s, sep="\t", index=False)
+# wl-16-10-2025, Thu: save to tsv or xlsx
+# mr.to_csv(csv_out_m, sep="\t", index=False)
+# sr.to_csv(csv_out_s, sep="\t", index=False)
+# wl-25-11-2025, Tue: take time to save in xlsx format
+utils._tic()
 with pd.ExcelWriter(xlsx_out, mode="w", engine="openpyxl") as writer:
     sr.to_excel(writer, sheet_name="single-row", index=False)
     mr.to_excel(writer, sheet_name="multiple-row", index=False)
+utils._toc()
