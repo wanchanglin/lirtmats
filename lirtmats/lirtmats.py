@@ -4,7 +4,7 @@ import pandas as pd
 import janitor      # remove_empty()
 from collections import OrderedDict
 from lamp import utils
-
+import lirtmats
 
 # ------------------------------------------------------------------------
 # wl-28-07-2025, Mon: RT matching
@@ -144,12 +144,12 @@ def read_rt(fn="", ion_mode="pos", sheet_name=0, sep="\t"):
     # load default reference library
     if not fn:
         path = 'lib/rt_lib_202509.xlsx'
-        # fn = os.path.join(
-        #     os.path.dirname(os.path.abspath(lamp.__file__)), path
-        # )
         fn = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), path
+            os.path.dirname(os.path.abspath(lirtmats.__file__)), path
         )
+        # fn = os.path.join(
+        #     os.path.dirname(os.path.abspath(__file__)), path
+        # )
 
     ext = os.path.splitext(fn)[1][1:]
     if ext in ['xls', 'xlsx']:
