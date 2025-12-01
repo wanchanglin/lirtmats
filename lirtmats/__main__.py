@@ -44,17 +44,17 @@ def main():
 
     # ---------------------------------------------------------------------
     # compounds annotation with reference and adduct files
-    parser_am.add_argument('--rt-tol', default=5.0, type=float,
-                           help="Retention time tolerance in seconds.")
-    parser_am.add_argument('--ion-mode', default='pos', type=str,
-                           choices=["pos", "neg"],
-                           help="Ion mode of data set.")
     parser_am.add_argument('--rt-path', type=str, default=None,
                            required=False,
                            help="Retention time reference file for matching.")
     parser_am.add_argument('--rt-sep', default="tab", type=str,
                            choices=["tab", "comma"],
                            help="Delimiter in retention time reference file")
+    parser_am.add_argument('--rt-tol', default=5.0, type=float,
+                           help="Retention time tolerance in seconds.")
+    parser_am.add_argument('--ion-mode', default='pos', type=str,
+                           choices=["pos", "neg"],
+                           help="Ion mode of data set.")
 
     # ---------------------------------------------------------------------
     # results outcome
@@ -62,7 +62,7 @@ def main():
                            help="Save all results in a sql database.")
     parser_am.add_argument('--db-out', type=str, required=True,
                            help="All results saved in a sqlite database.")
-    parser_am.add_argument('--xlsx-out', type=str, required=True,
+    parser_am.add_argument('--res-out', type=str, required=True,
                            help="Retention time matching results")
 
     # ---------------------------------------------------------------------
@@ -108,19 +108,19 @@ def main():
             sr.to_excel(writer, sheet_name="single-row", index=False)
             mr.to_excel(writer, sheet_name="multiple-row", index=False)
 
-    # if args.step == "gui":
-    #     # Exception Handling
-    #     try:
-    #         app = QApplication(sys.argv)
-    #         form = gui.lirtmats_app()
-    #         form.show()
-    #         sys.exit(app.exec())
-    #     except NameError:
-    #         print("Name Error:", sys.exc_info()[1])
-    #     except SystemExit:
-    #         print("Closing Window...")
-    #     except Exception:
-    #         print(sys.exc_info()[1])
+    if args.step == "gui":
+        # Exception Handling
+        try:
+            app = QApplication(sys.argv)
+            form = gui.lirtmats_app()
+            form.show()
+            sys.exit(app.exec())
+        except NameError:
+            print("Name Error:", sys.exc_info()[1])
+        except SystemExit:
+            print("Closing Window...")
+        except Exception:
+            print(sys.exc_info()[1])
 
 
 # -------------------------------------------------------------------------

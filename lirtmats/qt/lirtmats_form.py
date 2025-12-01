@@ -360,7 +360,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.comboBox_ref_sep.setCurrentIndex(1)
+        self.comboBox_ref_sep.setCurrentIndex(0)
         self.comboBox_ext.setCurrentIndex(0)
 
 
@@ -401,6 +401,7 @@ class Ui_MainWindow(object):
         self.comboBox_ref_sep.setItemText(0, QCoreApplication.translate("MainWindow", u"tab", None))
         self.comboBox_ref_sep.setItemText(1, QCoreApplication.translate("MainWindow", u"comma", None))
 
+        self.comboBox_ref_sep.setCurrentText(QCoreApplication.translate("MainWindow", u"tab", None))
         self.groupBox_save.setTitle("")
         self.label_ext.setText(QCoreApplication.translate("MainWindow", u"File Format:", None))
         self.lineEdit_sql.setText("")

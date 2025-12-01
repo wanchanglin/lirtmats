@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # wl-27-11-2025, Thu: commence
-
+# wl-01-12-2025, Mon: debug and test
 import os
 import sys
 import sqlite3
@@ -10,12 +10,14 @@ import pandas as pd
 from functools import partial
 from PySide6 import QtCore, QtWidgets
 from lamp import anno
+from lamp import utils
 from lirtmats.qt import lirtmats_form
+# import qt.lirtmats_form as lirtmats_form    # for debug
 from lirtmats import lirtmats as rtm
 
 
 # -------------------------------------------------------------------------
-# wl-19-09-2024, Thu: commence
+# wl-27-11-2025, Thu: commence
 class lirtmats_app(QtWidgets.QMainWindow, lirtmats_form.Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         super(lirtmats_app, self).__init__(*args, **kwargs)
@@ -29,24 +31,18 @@ class lirtmats_app(QtWidgets.QMainWindow, lirtmats_form.Ui_MainWindow):
             partial(self.open_file, self.lineEdit_data)
         )
 
-        # ---- Group features ----
-
-        # ---- Annotate compounds ----
+        # ---- Retention time Matching ----
         self.pushButton_ref.clicked.connect(
             partial(self.open_file, self.lineEdit_ref)
         )
-        self.pushButton_add.clicked.connect(
-            partial(self.open_file, self.lineEdit_add)
-        )
-        self.checkBox_mass_cal.clicked.connect(self.annotate_compounds)
 
         # ---- Save results ----
         self.pushButton_summ.clicked.connect(
-            partial(self.save_file, self.lineEdit_summ, "anno_summ")
+            partial(self.save_file, self.lineEdit_summ, "rtm_summ")
         )
         self.pushButton_sql.clicked.connect(
             partial(self.save_file,
-                    self.lineEdit_sql, "anno_comp.db")
+                    self.lineEdit_sql, "rtm_comp.db")
         )
 
         # ---- Others ----
@@ -151,17 +147,20 @@ class lirtmats_app(QtWidgets.QMainWindow, lirtmats_form.Ui_MainWindow):
             sep=sepa[self.comboBox_ref_sep.currentText()]
         )
 
+        utils._tic()
         res = rtm.comp_match_rt(peak=df, ref=ref,
                                 rt_tol=self.doubleSpinBox_rt.value())
         print("\n***Retention time matching done***")
 
         # -----------------------------------------------------------------
-        # get summary of metabolite annotation
+        # retention time matching summary
         sr, mr = anno.comp_summ(df, res)
         print("\n***Summary done***")
+        utils._toc()
 
         # -----------------------------------------------------------------
-        # save all results to a sqlite database or not
+        # save all results to a sqlite database
+        utils._tic()
         conn = sqlite3.connect(self.lineEdit_sql.text())
         df[["name", "mz", "rt"]].to_sql("peaklist", conn,
                                         if_exists="replace", index=False)
@@ -170,6 +169,9 @@ class lirtmats_app(QtWidgets.QMainWindow, lirtmats_form.Ui_MainWindow):
         conn.commit()
         conn.close()
 
+        # save results into xlsx or text file with formats of tsv or csv.
+        # The saving of xlsx takes considerable long time comparing with text
+        # file saving.
         if self.comboBox_ext.currentText() == "xlsx":
             xlsx_out = self.lineEdit_summ.text() + ".xlsx"
             with pd.ExcelWriter(xlsx_out, mode="w", engine="openpyxl") as writer:
@@ -186,7 +188,10 @@ class lirtmats_app(QtWidgets.QMainWindow, lirtmats_form.Ui_MainWindow):
             sr.to_csv(csv_out_s, sep=",", index=False)
             mr.to_csv(csv_out_m, sep=",", index=False)
 
-        print("\n***Save results done. You may close this app.***\n")
+        print("\n***Save results done.***")
+        utils._toc()
+
+        print("\n***You may close this app.***\n")
 
         self.pushButton_start.setEnabled(True)
         # self.close()
