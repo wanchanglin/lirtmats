@@ -1,5 +1,5 @@
 include README.md
 include LICENSE
-include lirtmats/*
+include lirtmats/lib/*
 include examples/*.py
 include examples/*.sh

@@ -45,7 +45,7 @@ def lirtmats_cmd(args):
 
     # get file name for results
     # extract data file name and path
-    fn= os.path.splitext(args.input_data)[0]
+    fn = os.path.splitext(args.input_data)[0]
 
     utils._tic()
     # save all results to a sqlite database or not

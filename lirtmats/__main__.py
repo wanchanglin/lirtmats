@@ -63,7 +63,7 @@ def main():
     parser_am.add_argument('--save-db', action="store_true",
                            help="Save all results in a sql database.")
     parser_am.add_argument('--summ-type', default="xlsx", type=str,
-                           choices=["xlsx", "tab", "comma"],
+                           choices=["xlsx", "tsv", "csv"],
                            help="Retention time matching result file format.")
 
     # ---------------------------------------------------------------------
@@ -80,10 +80,10 @@ def main():
 
         # -----------------------------------------------------------------
         # load retention time reference.
-        ref = rtm.read_rt(fn=args.ref_path,
+        ref = rtm.read_rt(fn=args.rt_path,
                           ion_mode=args.ion_mode,
                           sheet_name=0,
-                          sep=separators[args.ref_sep])
+                          sep=separators[args.rt_sep])
 
         # -----------------------------------------------------------------
         # retention time matching
@@ -95,7 +95,7 @@ def main():
 
         # get file name for results
         # extract data file name and path
-        fn= os.path.splitext(args.input_data)[0]
+        fn = os.path.splitext(args.input_data)[0]
 
         # -----------------------------------------------------------------
         # save all results to a sqlite database or not

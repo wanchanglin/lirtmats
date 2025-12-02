@@ -6,6 +6,7 @@ from collections import OrderedDict
 from lamp import utils
 import lirtmats
 
+
 # ------------------------------------------------------------------------
 # wl-28-07-2025, Mon: RT matching
 # wl-10-09-2025, Wed: Minor changes
@@ -146,10 +147,8 @@ def read_rt(fn="", ion_mode="pos", sheet_name=0, sep="\t"):
         path = 'lib/rt_lib_202509.xlsx'
         fn = os.path.join(
             os.path.dirname(os.path.abspath(lirtmats.__file__)), path
-        )
-        # fn = os.path.join(
         #     os.path.dirname(os.path.abspath(__file__)), path
-        # )
+        )
 
     ext = os.path.splitext(fn)[1][1:]
     if ext in ['xls', 'xlsx']:
