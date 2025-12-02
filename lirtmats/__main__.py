@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # wl-25-11-2025, Tue: commence
+# wl-02-12-2025, Mon: major changes
 
 from lirtmats import __version__
 import argparse
+import os
 import sys
 import sqlite3
 import pandas as pd
@@ -60,10 +62,9 @@ def main():
     # results outcome
     parser_am.add_argument('--save-db', action="store_true",
                            help="Save all results in a sql database.")
-    parser_am.add_argument('--db-out', type=str, required=True,
-                           help="All results saved in a sqlite database.")
-    parser_am.add_argument('--res-out', type=str, required=True,
-                           help="Retention time matching results")
+    parser_am.add_argument('--summ-type', default="xlsx", type=str,
+                           choices=["xlsx", "tab", "comma"],
+                           help="Retention time matching result file format.")
 
     # ---------------------------------------------------------------------
     args = parser.parse_args()
@@ -92,10 +93,15 @@ def main():
         # get summary of retention time matching
         sr, mr = anno.comp_summ(df, res)
 
+        # get file name for results
+        # extract data file name and path
+        fn= os.path.splitext(args.input_data)[0]
+
         # -----------------------------------------------------------------
         # save all results to a sqlite database or not
         if args.save_db:
-            conn = sqlite3.connect(args.db_out)
+            db_out = fn + "_rtm" + ".db"
+            conn = sqlite3.connect(db_out)
             df[["name", "mz", "rt"]].to_sql("peaklist", conn,
                                             if_exists="replace", index=False)
             mr.to_sql("rtm_mr", conn, if_exists="replace", index=False)
@@ -104,9 +110,21 @@ def main():
             conn.commit()
             conn.close()
 
-        with pd.ExcelWriter(args.xlsx_out, mode="w", engine="openpyxl") as writer:
-            sr.to_excel(writer, sheet_name="single-row", index=False)
-            mr.to_excel(writer, sheet_name="multiple-row", index=False)
+        if args.summ_type == "xlsx":
+            xlsx_out = fn + "_rtm" + ".xlsx"
+            with pd.ExcelWriter(xlsx_out, mode="w", engine="openpyxl") as writer:
+                sr.to_excel(writer, sheet_name="single-row", index=False)
+                mr.to_excel(writer, sheet_name="multiple-row", index=False)
+        elif args.summ_type == "tsv":
+            tsv_out_s = fn + "_rtm" + "_s.tsv"
+            tsv_out_m = fn + "_rtm" + "_m.tsv"
+            sr.to_csv(tsv_out_s, sep="\t", index=False)
+            mr.to_csv(tsv_out_m, sep="\t", index=False)
+        else:
+            csv_out_s = fn + "_rtm" + "_s.csv"
+            csv_out_m = fn + "_rtm" + "_m.csv"
+            sr.to_csv(csv_out_s, sep=",", index=False)
+            mr.to_csv(csv_out_m, sep=",", index=False)
 
     if args.step == "gui":
         # Exception Handling

@@ -45,18 +45,12 @@ def lirtmats_cmd(args):
 
     # get file name for results
     # extract data file name and path
-    tmp = os.path.basename(args.input_data)
-    tmp = os.path.splitext(tmp)[0]
-
-    # decide where the result to go. change here.
-    dir = os.path.dirname(os.path.abspath(__file__))
-
-    # results full names
-    db_out = dir + "/res/" + tmp + "_rtm" + ".db"
+    fn= os.path.splitext(args.input_data)[0]
 
     utils._tic()
     # save all results to a sqlite database or not
     if args.save_db:
+        db_out = fn + "_rtm" + ".db"
         conn = sqlite3.connect(db_out)
         df[["name", "mz", "rt"]].to_sql("peaklist", conn,
                                         if_exists="replace", index=False)
@@ -67,18 +61,18 @@ def lirtmats_cmd(args):
         conn.close()
 
     if args.summ_type == "xlsx":
-        xlsx_out = dir + "/res/" + tmp + "_rtm" + ".xlsx"
+        xlsx_out = fn + "_rtm" + ".xlsx"
         with pd.ExcelWriter(xlsx_out, mode="w", engine="openpyxl") as writer:
             sr.to_excel(writer, sheet_name="single-row", index=False)
             mr.to_excel(writer, sheet_name="multiple-row", index=False)
     elif args.summ_type == "tsv":
-        tsv_out_s = dir + "/res/" + tmp + "_rtm" + "_s.tsv"
-        tsv_out_m = dir + "/res/" + tmp + "_rtm" + "_m.tsv"
+        tsv_out_s = fn + "_rtm" + "_s.tsv"
+        tsv_out_m = fn + "_rtm" + "_m.tsv"
         sr.to_csv(tsv_out_s, sep="\t", index=False)
         mr.to_csv(tsv_out_m, sep="\t", index=False)
     else:
-        csv_out_s = dir + "/res/" + tmp + "_rtm" + "_s.csv"
-        csv_out_m = dir + "/res/" + tmp + "_rtm" + "_m.csv"
+        csv_out_s = fn + "_rtm" + "_s.csv"
+        csv_out_m = fn + "_rtm" + "_m.csv"
         sr.to_csv(csv_out_s, sep=",", index=False)
         mr.to_csv(csv_out_m, sep=",", index=False)
 
@@ -96,7 +90,8 @@ def main():
 
     args = {
         # 1.) load input data
-        'input_data': "./data/df_pos_3.tsv",
+        # 'input_data': "./data/df_pos_3.tsv",
+        'input_data': "./res/iSTOPP_C18aq_Pos.xlsx",
         'col_idx': "1, 2, 3, 4",
         'input_sep': "tab",                  # file separator: '\t' or ','
 
@@ -104,12 +99,12 @@ def main():
         # 'rt_path': "",        # default retention time reference
         'rt_path': "./ref/rt_lib_202509.tsv",
         'rt_sep': "tab",
-        'rt_tol': 5.0,         # rt torrence threshold
+        'rt_tol': 5.0,         # rt torrance threshold
         'ion_mode': "pos",     # Ion mode of data set
 
         # 3.) results outcome
         'save_db': True,       # save all results in sqlite database
-        'summ_type': "tsv"    # summary file type
+        'summ_type': "xlsx"    # summary file type
     }
 
     # -----------
