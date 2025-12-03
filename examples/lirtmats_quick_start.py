@@ -1,0 +1,157 @@
+# # Quick Start
+#
+# In this vignette we will demonstrate how to use `LiRTMaTS` python package.
+# The input data and reference files are located in
+# https://github.com/wanchanglin/lirtmats/tree/master/examples/data.
+
+# ## Setup
+#
+# To use `LiRTMaTS`, the first step is to import some python libraries
+# including `LiRTMaTS`.
+
+import sqlite3
+from lamp import anno, utils
+import lirtmats.lirtmats as rtm
+
+# ## Data Loading
+#
+# `LiRTMaTS` supports text files separated by comma (`,`) or tab (`\t`).
+# The Microsoft's XLSX is also supported, using argument `sheet_name` to
+# indicate which sheet is used for input data. The default is 0 for the
+# first sheet.
+#
+# Here we use a small example data set with `tsv` format.
+#
+# This data set includes peak list and intensity data matrix. `LiRTMaTS`
+# requires peak list's name, m/z value and retention time. User needs to
+# indicate the locations of feature name, m/z value, retention time and
+# starting points of data matrix from data. Here they are 1, 2, 3 and 4,
+# respectively.
+#
+
+cols = [1, 2, 3, 4]
+d_data = "./data/df_pos_3.tsv"                 # use tsv file
+df = anno.read_peak(d_data, cols, sep='\t')
+df
+
+# Data frame `df` now includes only `name`, `mz`, `rt` and intensity data
+# matrix.
+#
+# ## Retention Time Matching
+#
+# To perform retention time matching, users should provide their own
+# reference file. Otherwise, `LiRTMaTS` will use its default reference file for
+# annotation. Here we load the default reference file for retention time 
+# matching. Since the input data is positive mode here, we only
+# use positive part of reference file. If `ion_mode` is empty, all reference
+# items will be used for matching.
+
+ion_mode = "pos"
+# ref_path = ""  # if empty, use default reference file for matching
+
+# The reference file must have one column: `rt_lib` which is used for
+# retention time matching with a range or torrance.
+#
+ref_path = "./data/rt_lib_202509.tsv"
+ref = rtm.read_rt(ref_path, ion_mode=ion_mode)
+ref
+
+# Next we use this reference file for retention time match. Here function argument
+# `rt_tol` is used to control the matching tolerance(range). Th default is
+# 5 seconds
+
+rt_tol = 5
+res = rtm.comp_match_rt(df, ref, rt_tol)
+
+# ## Summarize Results
+#
+
+# get summary of metabolite annotation
+sr, mr = anno.comp_summ(df, res)
+
+# This function combines peak table with compound matching results and
+# returns two results in different formats. `sr` is single row results for
+# each peak id in peak table `df`:
+
+sr
+
+# `mr` is multiple rows format if the match more than once from the reference
+# file:
+
+mr
+
+# You can save all results in different forms, such as text format TSV or CSV.
+# You can also save all results into a `sqlite3` database and use
+# [DB Browser for SQLite](https://sqlitebrowser.org/) to view:
+
+f_save = False          # here we do NOT save results
+db_out = "test.db"
+sr_out = "test_s.tsv"
+
+if f_save:
+    # save all results into a sqlite3 database
+    conn = sqlite3.connect(db_out)
+    df[["name", "mz", "rt"]].to_sql("peaklist",
+                                    conn,
+                                    if_exists="replace",
+                                    index=False)
+    mr.to_sql("anno_mr", conn, if_exists="replace", index=False)
+    sr.to_sql("anno_sr", conn, if_exists="replace", index=False)
+
+    conn.commit()
+    conn.close()
+
+    # save final results
+    sr.to_csv(sr_out, sep="\t", index=False)
+
+# ## End User Usages
+#
+# For end users, `LiRTMaTS` provides two computation options: command line
+# interface(CLI) and graphical user interface (GUI).
+#
+# To use GUI,  you need to open a terminal and type in:
+#
+# ```bash
+# $ lirtmats gui
+# ```
+#
+# To use CLI, open a terminal and type in command with required arguments,
+# something like:
+#
+# ```bash
+# lirtmats cli \
+#   --input-data "./data/df_pos_3.tsv" \
+#   --input-sep "tab" \
+#   --col-idx "1, 2, 3, 4" \
+#   --rt-path "" \
+#   --rt-sep "tab" \
+#   --rt-tol "5.0" \
+#   --ion-mode "pos" \
+#   --save-db \
+#   --summ-type "xlsx" \
+# ```
+#
+# For the best practice, you can create a bash script `.sh` (Linux
+# and MacOS) or Windows script `.bat` to contain these CLI
+# arguments. Change parameters in these files each time when processing new
+# data set.
+#
+# For example, there are `lirtmats_cli.sh` and `lirtmats_cli.bat` in
+# https://github.com/wanchanglin/lirtmats/tree/master/examples.
+#
+# - For Linux and MacOS terminal:
+#
+#   ```bash
+#   $ chmod +x lirtmats_cli.sh
+#   $ ./lirtmats_cli.sh
+#   ```
+#
+# - For Windows terminal:
+#
+#   ```bash
+#   $ lirtmats_cli.bat
+#   ```
+#
+# Note that if users use `xlsx` files for input data and reference file
+# when using GUI or CLI, all data must be in the first sheet. If you use
+# `LiRTMaTS` functions in your python scripts, there are no such requirements.

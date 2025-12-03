@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# wl-02-12-2025, Mon: command-line test script
+# wl-02-12-2025, Mon: command-line test script for Linux and macOS
  
 lirtmats cli \
   --input-data "./data/df_pos_3.tsv" \
