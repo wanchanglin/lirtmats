@@ -1,16 +1,18 @@
 # # Quick Start
 #
-# In this vignette we will demonstrate how to use `LiRTMaTS` python package.
-# The input data and reference files are located in
+# This python script describes how to use `LiRTMaTS` python package. The
+# input data and retention time reference files used here are in
 # https://github.com/wanchanglin/lirtmats/tree/master/examples/data.
-
+#
 # ## Setup
 #
-# To use `LiRTMaTS`, the first step is to import some python libraries
-# including `LiRTMaTS`.
+# The users need to load python package `LAMP` before using `LiRTMaTS`. It's
+# functions used here are for loading data set and summarising the matching
+# results. For details, see https://github.com/wanchanglin/lamp.
 
 import sqlite3
-from lamp import anno, utils
+import pandas as pd
+from lamp import anno
 import lirtmats.lirtmats as rtm
 
 # ## Data Loading
@@ -20,18 +22,16 @@ import lirtmats.lirtmats as rtm
 # indicate which sheet is used for input data. The default is 0 for the
 # first sheet.
 #
-# Here we use a small example data set with `tsv` format.
-#
-# This data set includes peak list and intensity data matrix. `LiRTMaTS`
-# requires peak list's name, m/z value and retention time. User needs to
-# indicate the locations of feature name, m/z value, retention time and
-# starting points of data matrix from data. Here they are 1, 2, 3 and 4,
-# respectively.
+# Here we use a small example data set with `tsv` format. This data set
+# includes peak list and intensity data matrix. `LiRTMaTS` requires peak
+# list's name, m/z value and retention time. User needs to indicate the
+# locations of feature name, m/z value, retention time and starting points
+# of data matrix from data. Here they are 1, 2, 3 and 4, respectively.
 #
 
 cols = [1, 2, 3, 4]
-d_data = "./data/df_pos_3.tsv"                 # use tsv file
-df = anno.read_peak(d_data, cols, sep='\t')
+data_fn = "./data/df_pos_3.tsv"                 # use tsv file
+df = anno.read_peak(data_fn, cols, sep='\t')
 df
 
 # Data frame `df` now includes only `name`, `mz`, `rt` and intensity data
@@ -39,37 +39,35 @@ df
 #
 # ## Retention Time Matching
 #
-# To perform retention time matching, users should provide their own
-# reference file. Otherwise, `LiRTMaTS` will use its default reference file for
-# annotation. Here we load the default reference file for retention time 
-# matching. Since the input data is positive mode here, we only
-# use positive part of reference file. If `ion_mode` is empty, all reference
-# items will be used for matching.
+# To perform retention time matching, users use either default retention
+# time library or their own reference file. The reference file must have one
+# column: `rt_lib` which is used for retention time matching with a range or
+# torrance in seconds. Also the column `ion_mode` should be required for
+# indication of positive or negative mode matching. If `ion_mode` is not
+# included in the reference file, all rows will be used for matching.
+#
 
 ion_mode = "pos"
 # ref_path = ""  # if empty, use default reference file for matching
-
-# The reference file must have one column: `rt_lib` which is used for
-# retention time matching with a range or torrance.
-#
 ref_path = "./data/rt_lib_202509.tsv"
 ref = rtm.read_rt(ref_path, ion_mode=ion_mode)
 ref
 
-# Next we use this reference file for retention time match. Here function argument
-# `rt_tol` is used to control the matching tolerance(range). Th default is
-# 5 seconds
+# `rt_tol` is a threshold for the retention time matching window. The unit
+#  is seconds and the default value is 5.
 
 rt_tol = 5
 res = rtm.comp_match_rt(df, ref, rt_tol)
+res
 
 # ## Summarize Results
 #
+# The function `comp_summ` in package `LAMP`  summarises the retention time
+# matching.
 
-# get summary of metabolite annotation
 sr, mr = anno.comp_summ(df, res)
 
-# This function combines peak table with compound matching results and
+# This function combines peak table with retention time matching results and
 # returns two results in different formats. `sr` is single row results for
 # each peak id in peak table `df`:
 
@@ -80,13 +78,15 @@ sr
 
 mr
 
-# You can save all results in different forms, such as text format TSV or CSV.
-# You can also save all results into a `sqlite3` database and use
-# [DB Browser for SQLite](https://sqlitebrowser.org/) to view:
+# All of results can be saved into a `sqlite3` database and use
+# [DB Browser for SQLite](https://sqlitebrowser.org/) to view. Or save these
+# results in other formats, such as TSV, CSV or XLSX, separately.
 
 f_save = False          # here we do NOT save results
 db_out = "test.db"
 sr_out = "test_s.tsv"
+mr_out = "test_m.tsv"
+xlsx_out = "test.xlsx"
 
 if f_save:
     # save all results into a sqlite3 database
@@ -101,13 +101,22 @@ if f_save:
     conn.commit()
     conn.close()
 
-    # save final results
+    # save results into text files
     sr.to_csv(sr_out, sep="\t", index=False)
+    mr.to_csv(mr_out, sep="\t", index=False)
 
+    # save results into Excel format
+    with pd.ExcelWriter(xlsx_out, mode="w", engine="openpyxl") as writer:
+        sr.to_excel(writer, sheet_name="single-row", index=False)
+        mr.to_excel(writer, sheet_name="multiple-row", index=False)
+
+# It should be noted that saving of Excel file takes much longer time than
+# text files.
+#
 # ## End User Usages
 #
-# For end users, `LiRTMaTS` provides two computation options: command line
-# interface(CLI) and graphical user interface (GUI).
+# `LiRTMaTS` provides two computation options: command line interface(CLI)
+# and graphical user interface (GUI).
 #
 # To use GUI,  you need to open a terminal and type in:
 #
@@ -131,6 +140,11 @@ if f_save:
 #   --summ-type "xlsx" \
 # ```
 #
+# Execution of this command line will produce `df_pos_3_rtm.db` and
+# `df_pos_3_rtm.xlsx` in the directory `./data/`. If the `summ-type` is `tsv`
+# or `csv`, files `df_pos_3_rtm_s.tsv` or `df_pos_3_rtm_s.csv` and
+# `df_pos_3_rtm_m.tsv` or `df_pos_3_rtm_m.csv` will be saved into `./data`.
+#
 # For the best practice, you can create a bash script `.sh` (Linux
 # and MacOS) or Windows script `.bat` to contain these CLI
 # arguments. Change parameters in these files each time when processing new
@@ -152,6 +166,7 @@ if f_save:
 #   $ lirtmats_cli.bat
 #   ```
 #
-# Note that if users use `xlsx` files for input data and reference file
-# when using GUI or CLI, all data must be in the first sheet. If you use
-# `LiRTMaTS` functions in your python scripts, there are no such requirements.
+# Note that if users use `xlsx` files for input data and reference file when
+# using GUI or CLI, all data must be in the first sheet. If you use
+# `LiRTMaTS` functions in your python scripts, there are no such
+# requirements.
