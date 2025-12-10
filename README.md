@@ -25,15 +25,7 @@ matches within a RT range are reported.
 
 ## Installation
 
-### Source
-
-Install directly from GitHub: 
-
-```bash
-pip install git+https://github.com/wanchanglin/lirtmats.git
-```
-
-### PyPI (Coming soon)
+### PyPI 
 
 To install from [PyPI](https://pypi.org/) via `pip`, use the distribution
 name `lirtmats`:
@@ -50,7 +42,7 @@ Use the following to update if `lirtmats` has been installed before:
 pip install lirtmats --upgrade    # upgrade to the newest version
 ```
 
-### Conda (Coming soon)
+### Conda 
 
 `lirtmats` is in `Bioconda` channel and use the following to install or
 update for conda:
@@ -63,6 +55,14 @@ Use the following to update if `lirtmats` has been installed before:
 
 ```bash
 conda update -c bioconda lirtmats       # upgrade to the newest version
+```
+
+### Source
+
+Install directly from GitHub: 
+
+```bash
+pip install git+https://github.com/wanchanglin/lirtmats.git
 ```
 
 ## Usages
@@ -110,6 +110,7 @@ The following is an example:
 ## Links
 
 - Documentation: [Read the Docs](https://lirtmats-liverpool-retention-time-matching-software.readthedocs.io/en/latest/)
+- PyPI: https://pypi.org/project/lirtmats/
 
 ## Authors
 
